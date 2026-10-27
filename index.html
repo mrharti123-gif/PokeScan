@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#168fe5">
+<title>PokéScan — Pokémon Card Scanner</title>
+<style>
+:root{--bg:#e8f7ff;--panel:#ffffff;--panel2:#fff5c9;--line:#183d68;--text:#122849;--muted:#526b88;--accent:#ffd928;--blue:#168fe5;--warn:#ff9b20;--red:#d52b42;--radius:22px}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 8% 4%,#fff3a6 0 5%,transparent 5.3%),radial-gradient(circle at 96% 18%,#b7eaff 0 7%,transparent 7.3%),linear-gradient(180deg,#75d2ff 0%,#e8f7ff 250px,var(--bg) 100%);color:var(--text);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100vh}
+button,input{font:inherit}button{cursor:pointer;border:2px solid var(--line);background:var(--panel2);color:var(--text);border-radius:14px;padding:11px 14px;font-weight:800;box-shadow:0 4px 0 #183d68;transition:transform .15s,box-shadow .15s}button:hover{border-color:#183d68;transform:translateY(-2px);box-shadow:0 6px 0 #183d68}button.primary{background:linear-gradient(180deg,#ffe95a,#ffc928);color:#142d4c;border-color:#183d68}button.ghost{background:transparent}button:disabled{opacity:.45;cursor:not-allowed;transform:none}
+header{max-width:1180px;margin:auto;padding:25px 22px 14px;display:flex;align-items:center;justify-content:space-between;gap:15px}.brand{display:flex;align-items:center;gap:12px}.logo{width:48px;height:48px;border:3px solid #183d68;border-radius:16px;display:grid;place-items:center;background:linear-gradient(145deg,#ffe95a,#ffb52b);color:#d52b42;font-size:26px;font-weight:900;box-shadow:0 4px 0 #183d68}.brand h1{font-size:23px;letter-spacing:-.7px;margin:0;color:#12345b;text-shadow:1px 1px 0 #fff}.brand p{margin:2px 0 0;color:var(--muted);font-size:12px}.pill{font-size:11px;color:#17375d;background:#fff0a8;border:2px solid #183d68;border-radius:999px;padding:6px 10px;white-space:nowrap;font-weight:900;box-shadow:0 3px 0 #183d68}
+main{max-width:1180px;margin:auto;padding:10px 22px 50px}.intro{margin:18px 0 22px}.eyebrow{color:var(--accent);font-size:11px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase}.intro h2{font-size:clamp(28px,4vw,42px);line-height:1.1;letter-spacing:-1.5px;margin:8px 0}.intro p{color:var(--muted);margin:8px 0;max-width:650px}
+.layout{display:grid;grid-template-columns:minmax(300px,.85fr) minmax(0,1.15fr);gap:18px;align-items:start}.panel{background:linear-gradient(180deg,#ffffff,#f5fbff);border:2px solid #183d68;border-radius:var(--radius);padding:19px;box-shadow:0 6px 0 #183d68,0 14px 30px #19558b1c}.panel h3{margin:0 0 4px;font-size:17px;letter-spacing:-.3px}.sub{color:var(--muted);font-size:13px;margin:0 0 15px}
+.tabs{display:flex;gap:7px;margin-bottom:14px}.tabs button{flex:1;padding:9px 6px;font-size:13px}.tabs button.active{background:#168fe5;border-color:#183d68;color:#fff}
+.camera-box{background:linear-gradient(135deg,#e9f8ff,#fff8cf);border:2px dashed #168fe5;border-radius:18px;min-height:220px;display:grid;place-items:center;overflow:hidden;position:relative}.camera-box video,.camera-box img{display:block;width:100%;max-height:390px;object-fit:contain}.camera-placeholder{text-align:center;padding:25px;color:var(--muted)}.camera-placeholder .camicon{font-size:34px;margin-bottom:8px}.camera-placeholder strong{display:block;color:var(--text);margin-bottom:4px}
+.action-row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}.action-row button{flex:1}.file-label{display:block;text-align:center;border:1px solid var(--line);background:var(--panel2);border-radius:12px;padding:11px 14px;font-weight:650;cursor:pointer}.file-label input{display:none}
+.searchline{display:flex;gap:8px;margin-top:15px}.searchline input{min-width:0;flex:1;background:#fff;border:2px solid #183d68;color:var(--text);border-radius:14px;padding:11px 12px;outline:none}.searchline input:focus{border-color:var(--accent)}
+.status{margin-top:11px;min-height:20px;font-size:12px;color:var(--muted)}.status.error{color:var(--red)}.status.good{color:var(--accent)}
+.results{display:grid;gap:8px;margin-top:12px}.result-item{display:flex;align-items:center;gap:12px;text-align:left;width:100%;background:linear-gradient(120deg,#fff,#f2fbff);padding:9px;border-radius:15px;border:2px solid #d4e7f6;box-shadow:0 3px 0 #c0d8ec}.result-item img{width:48px;height:65px;object-fit:contain;background:#fff;border:1px solid #d5e5f1;border-radius:8px}.result-item .meta{flex:1;min-width:0}.result-item strong{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.result-item small{color:var(--muted)}
+.empty{min-height:360px;display:grid;place-items:center;text-align:center;color:var(--muted);padding:30px}.empty .big{font-size:45px;margin-bottom:10px}.empty strong{display:block;color:var(--text);font-size:17px;margin-bottom:5px}
+.card-detail{display:grid;grid-template-columns:minmax(125px,.7fr) minmax(0,1.3fr);gap:18px}.card-art{background:linear-gradient(135deg,#e4f6ff,#fff4b7);border:2px solid #183d68;border-radius:17px;display:flex;align-items:flex-start;justify-content:center;padding:10px;min-height:210px}.card-art img{width:100%;max-width:260px;height:auto;object-fit:contain;border-radius:9px}.card-name{font-size:26px;line-height:1.1;letter-spacing:-.7px;margin:3px 0 7px}.tagrow{display:flex;gap:6px;flex-wrap:wrap;margin:9px 0 13px}.tag{border:1.5px solid #8eb6d5;background:#eff9ff;border-radius:9px;padding:4px 7px;color:#25486c;font-size:11px;font-weight:750}.hp{font-size:13px;color:#ffb0a8;font-weight:800}.pricebox{background:linear-gradient(120deg,#fff6bd,#e9faff);border:2px solid #168fe5;border-radius:15px;padding:12px;margin:13px 0}.price-label{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:1px}.prices{display:flex;gap:20px;align-items:baseline;flex-wrap:wrap;margin-top:3px}.price{font-size:24px;font-weight:800;letter-spacing:-.7px}.price small{font-size:12px;color:var(--muted);font-weight:600}.notice{color:var(--muted);font-size:11px;margin-top:5px}
+.section-title{font-size:11px;color:var(--accent);font-weight:800;letter-spacing:1.3px;text-transform:uppercase;margin:17px 0 7px}.move{border-top:1px solid var(--line);padding:10px 0}.move:first-of-type{border-top:0}.movehead{display:flex;justify-content:space-between;gap:10px;font-weight:750}.move p{color:#c5d1df;font-size:13px;margin:5px 0 0}.move .cost{color:var(--warn);font-size:12px;white-space:nowrap}.collection{margin-top:18px}.collection-head{display:flex;justify-content:space-between;align-items:center;gap:10px}.collection-head h3{margin:0}.collection-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(115px,1fr));gap:10px;margin-top:13px}.mini-card{background:#fff;border:2px solid #cfe4f4;border-radius:15px;padding:9px;min-width:0;box-shadow:0 3px 0 #c0d8ec}.mini-card img{width:100%;height:135px;object-fit:contain;background:#f1faff;border-radius:9px}.mini-card strong{display:block;font-size:12px;margin-top:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mini-card small{display:block;color:var(--muted);font-size:11px}.mini-card button{width:100%;font-size:11px;padding:7px;margin-top:8px}.collection-empty{color:var(--muted);font-size:13px;padding:15px 0}
+footer{max-width:1180px;margin:auto;padding:0 22px 28px;color:#526b88;font-size:11px}footer a{color:#a6c6ff}
+@media(max-width:800px){.layout{grid-template-columns:1fr}.empty{min-height:180px}.card-detail{grid-template-columns:125px minmax(0,1fr)}.card-name{font-size:22px}}
+@media(max-width:420px){header{padding:18px 14px 8px}main{padding:10px 14px 35px}.panel{padding:14px}.intro h2{font-size:31px}.card-detail{grid-template-columns:1fr}.card-art{min-height:0}.card-art img{max-width:190px;max-height:250px}.prices{gap:12px}.price{font-size:21px}}
+</style>
+</head>
+<body>
+<header><div class="brand"><div class="logo">⚡</div><div><h1>PokéScan</h1><p>Gotta scan ’em all!</p></div></div><span class="pill">BETA · CARD DATABASE</span></header>
+<main>
+  <section class="intro"><div class="eyebrow">Your collection, understood</div><h2>Scan a card. Know your card.</h2><p>Identify Pokémon TCG printings, explore HP and attacks, and check available market estimates — all in one place.</p></section>
+  <div class="layout">
+    <section class="panel">
+      <h3>Scan or search</h3><p class="sub">Use your camera, upload a photo, or search by name.</p>
+      <div class="tabs"><button id="tabCamera" class="active">Live camera</button><button id="tabUpload">Upload photo</button></div>
+      <div class="camera-box" id="cameraBox"><div class="camera-placeholder"><div class="camicon">▣</div><strong>Ready when you are</strong><span>Start your camera to scan a card.</span></div></div>
+      <div class="action-row" id="cameraActions"><button class="primary" id="startCamera">Start camera</button><button id="capture" disabled>Capture & identify</button></div>
+      <div class="action-row" id="uploadActions" hidden><label class="file-label" style="flex:1">Choose card photo<input id="fileInput" type="file" accept="image/*" capture="environment"></label><button class="primary" id="identifyPhoto" disabled>Identify photo</button></div>
+      <div class="notice" style="margin-top:10px">Artwork mode compares visual features of your card with official card images. It needs a clear, front-facing photo and an internet connection.</div>
+      <div style="margin-top:14px;padding:13px;border:1px solid var(--line);border-radius:14px;background:#101720">
+        <div style="font-weight:750;margin-bottom:4px">Vision AI recognition</div>
+        <div class="notice" style="margin-bottom:9px">Uses PokéScan's secure server-side Groq/Qwen service. You do not need your own API key. An internet connection is required.</div>
+        <div class="action-row" style="margin-top:0"><button class="primary" id="visionIdentify" disabled>Identify with Vision AI</button></div>
+        <div class="notice">Your card image is sent to PokéScan's backend for analysis. The Groq secret is never placed in this HTML file.</div>
+      </div>
+      <div class="searchline"><input id="searchInput" placeholder="e.g. Charizard ex or 4/102" autocomplete="off"><button class="primary" id="searchBtn">Search</button></div>
+      <div class="status" id="status" role="status">Tip: card name search is the most reliable fallback. Camera access requires HTTPS or localhost.</div><div class="notice">Scanner note: OCR suggests matches; it cannot guarantee an exact printing. Chinese-language cards may need the Pokémon’s English name or collector number to find the correct database record.</div>
+      <div class="results" id="results"></div>
+    </section>
+    <section class="panel" id="detailPanel"><div class="empty"><div><div class="big">◈</div><strong>Your card appears here</strong><span>Search or scan to view its stats, printing, and price data.</span></div></div></section>
+  </div>
+  <section class="panel collection"><div class="collection-head"><div><h3>Your collection</h3><p class="sub" style="margin:3px 0 0">Saved on this device in your browser.</p></div><button class="ghost" id="exportBtn">Export JSON</button></div><div id="collectionSummary" class="sub" style="margin-top:13px">0 cards saved</div><div id="collectionGrid" class="collection-grid"></div></section>
+</main>
+<footer>Card data and images are retrieved from TCGdex, a multilingual Pokémon TCG database. Market prices are third-party estimates, may be missing or stale, and depend on the exact printing and condition. MAD conversions use a live public exchange-rate feed when available; otherwise they are shown as unavailable. PokéScan is an independent fan project and is not affiliated with Nintendo, Creatures, Game Freak, or The Pokémon Company.</footer>
+<script>
+(() => {
+const API='https://api.tcgdex.net/v2/en/cards';
+const POKESCAN_FUNCTION='https://wmhwbscmazfrgvhkagyo.supabase.co/functions/v1/pokescan-ai';
+const SUPABASE_PUBLIC_KEY='sb_publishable_Wc2AMapok9f86rrXbI4dcw_gJgdsFtR';
+const $=id=>document.getElementById(id);
+let stream=null, photoBlob=null, selected=null, rates=null, lastResults=[];
+let collection=JSON.parse(localStorage.getItem('pokescan_collection')||'[]');
+const status=(msg,type='')=>{$('status').textContent=msg;$('status').className='status '+type};
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money=(n,c='USD')=>Number.isFinite(Number(n))?new Intl.NumberFormat('en-US',{style:'currency',currency:c,maximumFractionDigits:2}).format(Number(n)):'Unavailable';
+async function loadRates(){try{const r=await fetch('https://open.er-api.com/v6/latest/USD');const j=await r.json();if(j.result==='success'&&j.rates?.MAD)rates={mad:j.rates.MAD,date:j.time_last_update_utc||''}}catch(e){}}
+loadRates();
+function setTab(which){const camera=which==='camera';$('tabCamera').classList.toggle('active',camera);$('tabUpload').classList.toggle('active',!camera);$('cameraActions').hidden=!camera;$('uploadActions').hidden=camera;if(!camera)stopCamera();else if($('cameraBox').querySelector('img')){$('cameraBox').innerHTML='<div class="camera-placeholder"><div class="camicon">▣</div><strong>Ready when you are</strong><span>Start your camera to scan a card.</span></div>';photoBlob=null;$('identifyPhoto').disabled=true}}
+$('tabCamera').onclick=()=>setTab('camera');$('tabUpload').onclick=()=>setTab('upload');
+function stopCamera(){if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}const v=$('cameraBox').querySelector('video');if(v)v.srcObject=null;$('startCamera').textContent='Start camera'}
+$('startCamera').onclick=async()=>{try{if(stream){stopCamera();return}stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});$('cameraBox').innerHTML='<video id="video" autoplay playsinline muted></video>';const v=$('video');v.srcObject=stream;$('capture').disabled=false;$('startCamera').textContent='Stop camera';status('Camera ready. Hold the card flat, with the name and card number visible.','good')}catch(e){status('Camera unavailable. Allow camera permission, use HTTPS, or switch to Upload photo.','error')}};
+$('capture').onclick=()=>{const v=$('video');if(!v||!v.videoWidth)return status('Wait for the camera preview to load.','error');const c=document.createElement('canvas');c.width=v.videoWidth;c.height=v.videoHeight;c.getContext('2d').drawImage(v,0,0);c.toBlob(b=>{photoBlob=b;currentScanBlob=b;$('visionIdentify').disabled=false;$('visionIdentify').textContent='Identify with Vision AI';showPhoto(URL.createObjectURL(b));$('identifyPhoto').disabled=false;status('Photo captured. Identifying text and matching database records…','good');identifyPhotoText(b)},'image/jpeg',.92)};
+$('fileInput').onchange=e=>{const f=e.target.files?.[0];if(!f)return;photoBlob=f;currentScanBlob=f;$('visionIdentify').disabled=false;$('visionIdentify').textContent='Identify with Vision AI';showPhoto(URL.createObjectURL(f));$('identifyPhoto').disabled=false;status('Photo loaded. Tap Identify photo to search for matching cards.','good')};
+function showPhoto(src){stopCamera();$('cameraBox').innerHTML=`<img alt="Selected Pokémon card photo" src="${src}">`}
+$('identifyPhoto').onclick=()=>{if(photoBlob)identifyPhotoText(photoBlob)};
+let currentScanBlob=null;
+
+let visionBusy=false;
+$('visionIdentify').disabled=true;
+$('visionIdentify').textContent='Capture or upload a card first';
+$('visionIdentify').onclick=async()=>{
+  const blob=photoBlob||currentScanBlob;
+  if(visionBusy)return;
+  if(!blob)return status('Capture or upload a card photo first.','error');
+  visionBusy=true;
+  $('visionIdentify').disabled=true;
+  $('visionIdentify').textContent='Analyzing card…';
+  status('Preparing a smaller image for faster analysis…');
+  let timer;
+  try{
+    // Resize large phone photos before upload: keep the longest edge at 1024px.
+    const sourceUrl=URL.createObjectURL(blob);
+    const img=await new Promise((resolve,reject)=>{const i=new Image();i.onload=()=>resolve(i);i.onerror=()=>reject(new Error('Could not read the card photo'));i.src=sourceUrl;});
+    const scale=Math.min(1,768/Math.max(img.naturalWidth,img.naturalHeight));
+    const canvas=document.createElement('canvas');
+    canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));
+    canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));
+    canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+    URL.revokeObjectURL(sourceUrl);
+    const dataUrl=canvas.toDataURL('image/jpeg',0.82);
+    const match=dataUrl.match(/^data:(image\/[^;]+);base64,(.+)$/);
+    if(!match)throw new Error('Could not prepare image');
+    status('Sending optimized card image to PokéScan AI…');
+    const controller=new AbortController();
+    timer=setTimeout(()=>controller.abort(),60000);
+    const response=await fetch(POKESCAN_FUNCTION,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':SUPABASE_PUBLIC_KEY},
+      signal:controller.signal,
+      body:JSON.stringify({action:'identify',image:dataUrl})
+    });
+    const body=await response.json();
+    if(!response.ok)throw new Error(body?.error||('PokéScan backend error '+response.status));
+    const raw=body.result||{};
+    const parsed={pokemon_name:raw.name||null,card_name:raw.name||null,hp:raw.hp||null,visible_attacks:raw.attacks||[],language:raw.language||null,likely_official_printing:raw.likely_official===true?true:raw.likely_official===false?false:'uncertain',visible_collector_number:raw.collector_number||null,visual_description:raw.visual_description||'',confidence:(Number(raw.confidence)||0)/100,notes:raw.notes||''};
+    const name=parsed.pokemon_name||parsed.card_name||'';
+    if(name)$('searchInput').value=name;
+    let records=[];
+    if(name){
+      try{records=await apiSearch(`name:"${name.replace(/"/g,'')}"`,12)}catch(e){}
+      if(!records.length){try{records=await apiSearch(`name:${name.replace(/[^\w -]/g,'')}`,12)}catch(e){}}
+    }
+    renderResults(records.slice(0,6));
+    const attacks=Array.isArray(parsed.visible_attacks)?parsed.visible_attacks.map(a=>`${a.name||'Attack'}${a.damage?' — '+a.damage+' damage':''}`).join('; '):'Not clearly readable';
+    const official=parsed.likely_official_printing===true?'Likely official printing':parsed.likely_official_printing===false?'May be custom/unofficial':'Printing authenticity uncertain';
+    const summary=`Vision AI: ${name||'Pokémon not confidently identified'}${parsed.hp?' · '+parsed.hp+' HP':''}. ${official}. Confidence: ${Math.round((Number(parsed.confidence)||0)*100)}%. ${parsed.visible_collector_number?'Collector number: '+parsed.visible_collector_number+'. ':''}${attacks!=='Not clearly readable'?'Attacks: '+attacks+'. ':''}${parsed.notes||''}`;
+    status(summary,records.length?'good':'');
+    $('detailPanel').innerHTML=`<div class="section-title">Vision AI reading · not a verified database record</div><h2 class="card-name">${esc(name||'Card not confidently identified')}</h2><div class="tagrow"><span class="tag">${esc(parsed.language||'Language uncertain')}</span><span class="tag">${esc(official)}</span><span class="tag">Confidence ${Math.round((Number(parsed.confidence)||0)*100)}%</span></div><p>${esc(parsed.visual_description||'No visual description returned.')}</p><div class="section-title">Text detected by Vision AI</div><p>${parsed.hp?'HP: '+esc(parsed.hp):'HP: Not confidently read'}</p><p>${esc(attacks)}</p><p>${parsed.visible_collector_number?'Collector number: '+esc(parsed.visible_collector_number):'Collector number: Not confidently read'}</p><div class="pricebox"><div class="price-label">Market price</div><div class="notice">Not shown yet. Confirm an exact database printing below before trusting price data.</div></div>${records.length?'<p class="sub">Possible database matches are listed on the left. Select the exact printing to see its stored details.</p>':'<p class="sub">No database match found. The visual identification may still help, but the exact printing and price remain unverified.</p>'}`;
+  }catch(e){
+    const message=e.name==='AbortError'?'Timed out after 60 seconds. Check your connection or Groq API availability, then try again.':(e.message||'Unknown error');
+    status('Vision AI failed: '+message+'. Check your Groq key, model availability, and internet connection.','error')
+  }
+  finally{
+    clearTimeout(timer);
+    visionBusy=false;
+    $('visionIdentify').disabled=!(photoBlob||currentScanBlob);
+    $('visionIdentify').textContent=photoBlob||currentScanBlob?'Identify with Vision AI':'Capture or upload a card first';
+  }
+};
+// Artwork matching: compare a normalized visual fingerprint of the submitted photo
+// against database card images. This works without reading the card's printed language.
+async function imageFingerprint(source){
+  const img = source instanceof HTMLImageElement ? source : await new Promise((resolve,reject)=>{
+    const i=new Image(); i.onload=()=>resolve(i); i.onerror=reject; i.src=URL.createObjectURL(source);
+  });
+  const c=document.createElement('canvas'); c.width=24; c.height=24;
+  const x=c.getContext('2d',{willReadFrequently:true});
+  x.drawImage(img,0,0,24,24);
+  const d=x.getImageData(0,0,24,24).data;
+  const out=[];
+  for(let y=0;y<24;y+=2) for(let xx=0;xx<24;xx+=2){
+    const k=(y*24+xx)*4;
+    out.push(Math.round(d[k]/16),Math.round(d[k+1]/16),Math.round(d[k+2]/16));
+  }
+  return out;
+}
+function fingerprintDistance(a,b){
+  if(!a||!b||a.length!==b.length)return Infinity;
+  let total=0; for(let i=0;i<a.length;i++)total+=Math.abs(a[i]-b[i]);
+  return total/a.length;
+}
+async function matchArtwork(blob){
+  status('Matching the card artwork against database images…');
+  try{
+    // Get broad candidates using OCR if it already found a likely Pokémon name;
+    // otherwise use common TCG image searches as a first pass.
+    let candidates=[];
+    const text=$('searchInput').value.trim();
+    const words=(text.match(/[A-Za-z]{3,}/g)||[]).filter(w=>!['max','vmax','pokemon','basic','stage','charizard','attack','fire'].includes(w.toLowerCase()));
+    if(text && /charizard/i.test(text)) candidates.push(...await apiSearch('name:charizard',50));
+    for(const w of words.slice(0,3)){
+      try{candidates.push(...await apiSearch(`name:"${w}"`,15))}catch(e){}
+    }
+    if(!candidates.length){
+      // Broad candidates from popular names are only a fallback; image match will rank them.
+      for(const n of ['Charizard','Pikachu','Mewtwo','Eevee','Lucario','Dragonite','Gengar','Greninja']){
+        try{candidates.push(...await apiSearch(`name:"${n}"`,8))}catch(e){}
+      }
+    }
+    candidates=[...new Map(candidates.filter(c=>c.images?.small||c.images?.large).map(c=>[c.id,c])).values()].slice(0,100);
+    if(!candidates.length){status('No candidate card images could be loaded. Try search by Pokémon name first.','error');return}
+    const target=await imageFingerprint(blob);
+    const ranked=[];
+    for(const card of candidates){
+      const url=card.images?.small||card.images?.large;
+      if(!url)continue;
+      try{
+        const response=await fetch(url,{mode:'cors'});
+        if(!response.ok)continue;
+        const imageBlob=await response.blob();
+        const fp=await imageFingerprint(imageBlob);
+        ranked.push({card,score:fingerprintDistance(target,fp)});
+      }catch(e){}
+    }
+    ranked.sort((a,b)=>a.score-b.score);
+    const best=ranked.slice(0,8).map(x=>x.card);
+    if(best.length){
+      renderResults(best);
+      status('Ranked possible artwork matches. Choose the card that looks most like yours. Visual similarity is a clue, not proof of an exact printing.','good');
+    }else{
+      status('Artwork comparison was blocked by image-source restrictions. Search the Pokémon name first, then use the candidate list.','error');
+    }
+  }catch(e){status('Artwork matching failed to load. Check your connection and try again.','error')}
+}
+async function identifyPhotoText(blob){
+  currentScanBlob=blob;
+  // Start visual matching too; OCR remains as a fallback and helps narrow candidates.
+  matchArtwork(blob);
+  status('Preparing the card image for text recognition…');
+  $('results').innerHTML='';
+  try{
+    if(!window.Tesseract){
+      await new Promise((resolve,reject)=>{
+        const s=document.createElement('script');
+        s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+        s.onload=resolve;s.onerror=reject;document.head.appendChild(s)
+      })
+    }
+    // Enlarge and improve contrast to help OCR read small collector numbers and text.
+    const source=await createImageBitmap(blob);
+    const scale=Math.min(3,Math.max(2,1800/Math.max(source.width,source.height)));
+    const canvas=document.createElement('canvas');
+    canvas.width=Math.round(source.width*scale);
+    canvas.height=Math.round(source.height*scale);
+    const ctx=canvas.getContext('2d',{willReadFrequently:true});
+    ctx.drawImage(source,0,0,canvas.width,canvas.height);
+    const pixels=ctx.getImageData(0,0,canvas.width,canvas.height);
+    for(let i=0;i<pixels.data.length;i+=4){
+      const gray=.299*pixels.data[i]+.587*pixels.data[i+1]+.114*pixels.data[i+2];
+      const contrast=Math.max(0,Math.min(255,(gray-115)*1.45+115));
+      pixels.data[i]=pixels.data[i+1]=pixels.data[i+2]=contrast;
+    }
+    ctx.putImageData(pixels,0,0);
+    const processed=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.95));
+    // English OCR is fast for most cards. If little Latin text is found, retry with Simplified
+    // and Traditional Chinese trained data so Chinese-language printings are handled better.
+    let worker=await Tesseract.createWorker('eng');
+    let result=await worker.recognize(processed||blob);
+    let raw=(result.data.text||'').replace(/\r/g,' ').replace(/[ \t]+/g,' ').replace(/\n+/g,' ').trim();
+    const latinWords=(raw.match(/[A-Za-z][A-Za-z'-]{2,}/g)||[]);
+    const looksChinese=/[\u3400-\u9FFF]/.test(raw);
+    if(latinWords.length<2 || looksChinese){
+      status('Chinese or mixed-language text detected — trying multilingual recognition…');
+      await worker.terminate();
+      worker=await Tesseract.createWorker('eng+chi_sim+chi_tra');
+      result=await worker.recognize(processed||blob);
+      const multi=(result.data.text||'').replace(/\r/g,' ').replace(/[ \t]+/g,' ').replace(/\n+/g,' ').trim();
+      if(multi.length>raw.length)raw=multi;
+    }
+    await worker.terminate();
+
+    const tokens=(raw.match(/[A-Za-z][A-Za-z'-]{2,}/g)||[]);
+    const ignored=new Set(['pokemon','basic','stage','evolves','from','trainer','supporter','item','energy','weakness','resistance','retreat','ability','damage','illustrator','copyright','rule','attack','switch','draw','your','opponent','during','this','turn','each','card','when','that','with','for','the','and','search','choose','discard','put','into','play','once','between']);
+    const candidates=tokens.filter(t=>!ignored.has(t.toLowerCase()));
+    const numberMatches=[...raw.matchAll(/\b(\d{1,3})\s*\/\s*(\d{1,3})\b/g)];
+    status('Reading card text and checking possible database matches…');
+    let found=[];
+    // Search useful word pairs first, since many Pokémon names have two words.
+    const uniqueTokens=[...new Set(candidates.map(t=>t.replace(/[^A-Za-z'-]/g,'')))].slice(0,10);
+    const queries=[];
+    for(let i=0;i<Math.min(uniqueTokens.length,7);i++){
+      if(i+1<uniqueTokens.length)queries.push(`name:"${uniqueTokens[i]} ${uniqueTokens[i+1]}"`);
+      queries.push(`name:"${uniqueTokens[i]}"`);
+    }
+    for(const q of [...new Set(queries)].slice(0,10)){
+      try{found.push(...await apiSearch(q,8))}catch(e){}
+    }
+    for(const m of numberMatches.slice(0,3)){
+      try{
+        const matches=await apiSearch(`number:${m[1]}`,20);
+        found.push(...matches.filter(c=>String(c.number)===String(Number(m[1]))));
+      }catch(e){}
+    }
+    const uniq=[...new Map(found.map(c=>[c.id,c])).values()];
+    renderResults(uniq.slice(0,10));
+    if(uniq.length){
+      status(`Found ${uniq.length} possible match${uniq.length===1?'':'es'}. Confirm the artwork, set and collector number — OCR is not guaranteed to identify the exact printing.`,'good');
+    }else if(/[\u3400-\u9FFF]/.test(raw) && candidates.length===0){
+      // The API's searchable card names are primarily English; Chinese OCR alone cannot
+      // safely map a Chinese name to an exact printing.
+      $('searchInput').value='';
+      status('Chinese text was detected, but the database could not map it to an exact card automatically. Type the Pokémon’s English name in Search, or read the small collector number at the bottom and search that.','error');
+      $('results').innerHTML='<div class="sub">Tip for Chinese cards: the artwork can help you identify the Pokémon, but always confirm the exact set and card number before trusting the price.</div>';
+    }else{
+      $('searchInput').value=candidates.slice(0,4).join(' ');
+      status('No confident match found. Try a sharper, closer photo with the full card visible, or type the Pokémon name in the search box.','error');
+    }
+  }catch(e){
+    status('Text recognition could not load. Check your internet connection, then search by Pokémon name. Multilingual OCR may take longer on the first scan.','error')
+  }
+}
+async function apiSearch(q,pageSize=12){
+  let term=String(q||'').replace(/^name:/i,'').replace(/^number:/i,'').replace(/^[\"']|[\"']$/g,'').trim();
+  if(!term)return [];
+  const u=new URL(API);
+  u.searchParams.set('name',term);
+  const r=await fetch(u.toString(),{headers:{Accept:'application/json'}});
+  if(!r.ok)throw new Error('TCGdex request failed ('+r.status+')');
+  const rows=await r.json();
+  if(!Array.isArray(rows))return [];
+  return rows.slice(0,pageSize).map(c=>({
+    id:c.id||c.localId||c.name,
+    name:c.name||'Unknown card',
+    number:c.localId||'?',
+    rarity:c.rarity||'Unavailable',
+    supertype:c.category||'Pokémon',
+    images:{small:c.image?(c.image+'/low.webp'):'',large:c.image?(c.image+'/high.webp'):''},
+    set:{id:c.set?.id||'',name:c.set?.name||'Unknown set',printedTotal:c.set?.cardCount?.official||c.set?.cardCount?.total||'?',releaseDate:c.set?.releaseDate||''},
+    _tcgdex:true
+  }));
+}
+$('searchBtn').onclick=search; $('searchInput').addEventListener('keydown',e=>{if(e.key==='Enter')search()});
+async function search(){const term=$('searchInput').value.trim();if(!term)return status('Enter a Pokémon name or card number first.','error');status('Searching the multilingual TCGdex card database…');$('results').innerHTML='';try{let cards=[];if(/^\d{1,3}\s*\/\s*\d{1,3}$/.test(term)){const [n,total]=term.split('/').map(x=>x.trim());cards=await apiSearch(`number:${n}`,20);cards=cards.filter(c=>String(c.number)===n&&(!c.set?.printedTotal||String(c.set.printedTotal)===total))}else{cards=await apiSearch(`name:"${term.replace(/"/g,'')}"`,20);if(!cards.length)cards=await apiSearch(`name:${term.replace(/[^\w -]/g,'')}`,20)}renderResults(cards);status(cards.length?`Found ${cards.length} possible printing${cards.length===1?'':'s'}. Select the one that matches your card.`:'No exact match found. Try a shorter name or collector number.',cards.length?'good':'error')}catch(e){status('Could not reach the card database. Check your connection and try again.','error')}}
+function renderResults(cards){lastResults=cards;$('results').innerHTML='';if(!cards.length){$('results').innerHTML='<div class="sub">No matching cards found.</div>';return}cards.forEach(c=>{const b=document.createElement('button');b.className='result-item';const img=c.images?.small||'';b.innerHTML=`<img src="${esc(img)}" alt=""><span class="meta"><strong>${esc(c.name)}</strong><small>${esc(c.set?.name||'Unknown set')} · ${esc(c.number||'?')}/${esc(c.set?.printedTotal||'?')} · ${esc(c.rarity||'Rarity unavailable')}</small></span><span>›</span>`;b.onclick=async()=>{if(c._tcgdex){try{status('Loading full card details from TCGdex…');const r=await fetch('https://api.tcgdex.net/v2/en/cards/'+encodeURIComponent(c.id));if(!r.ok)throw new Error('Details unavailable');const d=await r.json();c={...c,name:d.name||c.name,hp:d.hp,types:d.types||[],attacks:(d.attacks||[]).map(a=>({name:a.name,damage:a.damage||'',cost:a.cost||[],text:a.effect||''})),abilities:(d.abilities||[]).map(a=>({name:a.name,type:a.type||'Ability',text:a.effect||''})),artist:d.illustrator||'',subtypes:d.stage?[d.stage]:[],weaknesses:(d.weaknesses||[]).map(w=>({type:w.type,value:w.value})),resistances:(d.resistances||[]).map(w=>({type:w.type,value:w.value})),retreatCost:d.retreat||[],regulationMark:d.regulationMark,rarity:d.rarity||c.rarity,images:{small:d.image?(d.image+'/low.webp'):c.images.small,large:d.image?(d.image+'/high.webp'):c.images.large},set:{...c.set,name:d.set?.name||c.set?.name,releaseDate:d.set?.releaseDate||''}};c._tcgdex=true;showCard(c);status('Loaded card details from TCGdex. Market prices are not provided by this database.','good')}catch(e){showCard(c);status('Loaded basic TCGdex result; full details could not be reached.','error')}}else showCard(c)};$('results').appendChild(b)})}
+function pricesOf(c){const p=c.tcgplayer?.prices||{};const preferred=['holofoil','normal','reverseHolofoil','1stEditionHolofoil','unlimitedHolofoil'];for(const k of preferred){const v=p[k];if(v&&Number.isFinite(Number(v.market)))return {usd:Number(v.market),kind:k,source:'TCGplayer market estimate',updated:c.tcgplayer?.updatedAt||''}}for(const [k,v] of Object.entries(p)){if(v&&Number.isFinite(Number(v.market)))return {usd:Number(v.market),kind:k,source:'TCGplayer market estimate',updated:c.tcgplayer?.updatedAt||''}}return null}
+function showCard(c){selected=c;const price=pricesOf(c);const mad=price&&rates?price.usd*rates.mad:null;const attacks=c.attacks||[],abilities=c.abilities||[];const image=c.images?.large||c.images?.small||'';const types=(c.types||[]).join(', ')||'Type unavailable';const saveExists=collection.some(x=>x.id===c.id);$('detailPanel').innerHTML=`<div class="card-detail"><div class="card-art">${image?`<img src="${esc(image)}" alt="${esc(c.name)} card artwork">`:'<div class="empty">Image unavailable</div>'}</div><div><div class="eyebrow">${esc(c.supertype||'Pokémon card')} · ${esc(types)}</div><h2 class="card-name">${esc(c.name)}</h2><div class="hp">${c.hp?esc(c.hp)+' HP':'HP unavailable'}</div><div class="tagrow"><span class="tag">${esc(c.set?.name||'Set unavailable')}</span><span class="tag">#${esc(c.number||'?')}/${esc(c.set?.printedTotal||'?')}</span><span class="tag">${esc(c.rarity||'Rarity unavailable')}</span></div><div class="pricebox"><div class="price-label">Market estimate · ${price?esc(price.source):'No market data available'}</div><div class="prices"><div class="price">${price?money(price.usd,'USD'):'Unavailable'} <small>USD</small></div><div class="price">${mad!==null?money(mad,'MAD'):'Unavailable'} <small>MAD</small></div></div><div class="notice">${price?`Printing: ${esc(price.kind)}. ${price.updated?'Price data updated '+esc(price.updated)+'.':''}`:'No supported market price was returned for this card. No price has been guessed.'} ${price&&!rates?'MAD conversion unavailable while exchange-rate service is offline.':''}</div></div><button class="primary" id="saveCard" style="width:100%">${saveExists?'✓ Saved to collection':'＋ Save to collection'}</button></div></div><div class="section-title">Attacks</div>${attacks.length?attacks.map(a=>`<div class="move"><div class="movehead"><span>${esc(a.name)}</span><span class="cost">${esc((a.cost||[]).join(' '))} ${esc(a.damage||'')}</span></div><p>${esc(a.text||'No attack description provided.')}</p></div>`).join(''):'<p class="sub">Attack data is not available for this database record.</p>'}<div class="section-title">Abilities</div>${abilities.length?abilities.map(a=>`<div class="move"><div class="movehead">${esc(a.name)} <span class="cost">${esc(a.type||'Ability')}</span></div><p>${esc(a.text||'No ability description provided.')}</p></div>`).join(''):'<p class="sub">No ability listed for this card record.</p>'}<div class="section-title">Card details</div><div class="move"><div class="movehead"><span>Artist</span><span class="cost">${esc(c.artist||'Unavailable')}</span></div><p>Supertype: ${esc(c.supertype||'Unavailable')}${c.subtypes?.length?' · Subtype: '+esc(c.subtypes.join(', ')):''}</p><p>Weakness: ${esc((c.weaknesses||[]).map(w=>w.type+' '+w.value).join(', ')||'Unavailable')} · Resistance: ${esc((c.resistances||[]).map(w=>w.type+' '+w.value).join(', ')||'Unavailable')}</p><p>Retreat cost: ${esc((c.retreatCost||[]).join(', ')||'Unavailable')} · Regulation mark: ${esc(c.regulationMark||'Unavailable')}</p><p>Set release date: ${esc(c.set?.releaseDate||'Unavailable')} · API ID: ${esc(c.id)}</p></div><div class="notice">Make sure the artwork, set, collector number, and foil version match your physical card. Condition can change its real-world sale value significantly.</div>`;$('saveCard').onclick=()=>saveSelected();$('detailPanel').scrollIntoView({behavior:'smooth',block:'nearest'})}
+function saveSelected(){if(!selected)return;if(collection.some(x=>x.id===selected.id)){status('This exact printing is already in your collection.','good');return}const p=pricesOf(selected);collection.unshift({id:selected.id,name:selected.name,image:selected.images?.small||'',set:selected.set?.name||'Unknown set',number:selected.number||'?',rarity:selected.rarity||'Unavailable',usd:p?.usd??null,savedAt:new Date().toISOString()});persist();renderCollection();$('saveCard').textContent='✓ Saved to collection';status('Card saved to this device.','good')}
+function persist(){localStorage.setItem('pokescan_collection',JSON.stringify(collection))}
+function renderCollection(){$('collectionSummary').textContent=`${collection.length} unique card${collection.length===1?'':'s'} saved · values are estimates from the time of scan`;const grid=$('collectionGrid');grid.innerHTML='';if(!collection.length){grid.innerHTML='<div class="collection-empty">No cards saved yet. Scan or search for a card, then tap “Save to collection”.</div>';return}collection.forEach((c,i)=>{const el=document.createElement('div');el.className='mini-card';el.innerHTML=`<img src="${esc(c.image)}" alt="${esc(c.name)}"><strong>${esc(c.name)}</strong><small>${esc(c.set)} · #${esc(c.number)}</small><small>${c.usd!==null?money(c.usd,'USD')+' · '+(rates?money(c.usd*rates.mad,'MAD'):'MAD unavailable'):'Price unavailable'}</small><button class="ghost" data-i="${i}">Remove</button>`;el.querySelector('button').onclick=()=>{collection.splice(i,1);persist();renderCollection()};grid.appendChild(el)})}
+$('exportBtn').onclick=()=>{const blob=new Blob([JSON.stringify(collection,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='pokescan-collection.json';a.click();URL.revokeObjectURL(a.href)};
+window.addEventListener('beforeunload',stopCamera);renderCollection();
+})();
+</script>
+</body>
+</html>
